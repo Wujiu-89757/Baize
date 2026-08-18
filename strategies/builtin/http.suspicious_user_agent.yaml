@@ -1,0 +1,23 @@
+id: http.suspicious_user_agent
+name: HTTP 可疑 User-Agent（扫描/自动化工具）
+version: 1.0.0
+category: http
+scope: packet
+enabled: true
+severity: low
+weight: 15
+confidence: 0.65
+author: baize-team
+description: >-
+  HTTP 请求携带扫描器、漏洞利用或自动化下载工具的 User-Agent
+  （sqlmap/nikto/nmap/hydra/powershell/curl/wget 等）。提示关注，
+  不构成恶意结论。
+false_positive_hint: 运维脚本、CI 下载、合法渗透测试均可能使用此类 UA。
+conditions:
+  all:
+    - field: http.user_agent
+      op: regex
+      value: (?i)(sqlmap|nikto|nmap|hydra|nessus|wpscan|powershell|curl|wget|python-requests|libwww-perl)
+evidence: [frame.number, frame.time, ip.src, ip.dst, http.host, http.uri, http.user_agent]
+mitre_tags: [T1595]
+tags: [HTTP, SCANNER, UA]

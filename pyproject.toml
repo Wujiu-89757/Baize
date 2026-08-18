@@ -1,0 +1,34 @@
+[project]
+name = "baize-traffic-analysis"
+version = "0.1"
+description = "白泽流量分析平台 v0.1：PCAP/PCAPNG 恶意流量分析"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "sqlalchemy>=2.0",
+    "pydantic>=2.6",
+    "python-multipart>=0.0.9",
+    "PyYAML>=6.0",
+    "scapy>=2.5",
+    "regex>=2024.5.15",
+    "jsonschema>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"

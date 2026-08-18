@@ -1,0 +1,22 @@
+id: scan.unusual_ports
+name: 连接罕见/高危端口（木马后门常用）
+version: 1.0.0
+category: scanning
+scope: packet
+enabled: true
+severity: low
+weight: 20
+confidence: 0.6
+author: baize-team
+description: >-
+  数据包访问木马/后门与远控工具常用端口（4444、5555、6666-6669、
+  12345、31337 等）。单条命中仅提示关注，需结合会话行为判断。
+false_positive_hint: 部分游戏、P2P 软件可能使用这些端口，需结合资产角色判断。
+conditions:
+  all:
+    - field: tcp.dstport
+      op: in
+      value: [4444, 5555, 6666, 6667, 6668, 6669, 12345, 31337, 54321, 27444]
+evidence: [frame.number, frame.time, ip.src, ip.dst, tcp.dstport, tcp.flags]
+mitre_tags: [T1571]
+tags: [BACKDOOR, PORT]

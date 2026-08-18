@@ -1,0 +1,30 @@
+id: dns.exfil.dnslog_platform
+name: DNS 外带-已知 DNSLog 平台
+version: 1.0.0
+category: exfiltration
+scope: session
+enabled: true
+severity: high
+weight: 60
+confidence: 0.85
+author: baize-team
+description: >-
+  同一源 IP 对已知 DNSLog 平台域名（dnslog.cn / ceye.io 等）发起批量 DNS 查询。
+  DNSLog 平台常用于数据外带（把机密数据 Base64 切分到子域名逐条带出）与
+  无回显漏洞探测，短时间大量查询即为可疑信号。结合子域名高熵/Base64 特征可确认。
+false_positive_hint: 安全研究人员、DNS 诊断工具可能主动访问此类平台；仅查询 1~2 次通常为探测，
+  批量查询才构成外带嫌疑。
+window:
+  seconds: 300
+  group_by: [src_ip, dns.base_domain]
+conditions:
+  all:
+    - field: dns.base_domain
+      op: in
+      value: [dnslog.cn, dnslog.link, dnslog.io, dnslog.org, ceye.io, dig.pm, tu4.org, eyuio.com]
+    - field: session.dns_query_count
+      op: gte
+      value: 5
+evidence: [frame.number, frame.time, ip.src, dns.query, dns.qtype]
+mitre_tags: [T1048.003, T1071.004]
+tags: [DNS, EXFIL, DNSLOG]

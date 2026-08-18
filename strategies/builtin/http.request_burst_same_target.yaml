@@ -1,0 +1,29 @@
+id: http.request_burst_same_target
+name: HTTP 高频请求-同目标突发
+version: 1.0.0
+category: scanning
+scope: session
+enabled: true
+severity: low
+weight: 15
+confidence: 0.6
+author: baize-team
+description: >-
+  同一源 IP 在短时间窗口内对同一 Host 发起大量 HTTP 请求。
+  常见于 SQL 盲注逐字符爆破、Web 目录爆破、口令爆破等自动化攻击；
+  正常爬虫/压力测试也可能命中，作为辅助信号与其他策略联动。
+false_positive_hint: 网络爬虫、监控探针、性能压测可能高频请求，仅作弱信号。
+window:
+  seconds: 60
+  group_by: [src_ip, http.host]
+conditions:
+  all:
+    - field: session.http_request_count
+      op: gte
+      value: 60
+    - field: session.distinct_dst_ips
+      op: lte
+      value: 3
+evidence: [frame.number, frame.time, ip.src, http.host, http.uri, http.method]
+mitre_tags: [T1110, T1190]
+tags: [HTTP, BRUTE, BURST]

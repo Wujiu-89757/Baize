@@ -1,0 +1,22 @@
+id: http.malicious_download
+name: HTTP 下载可执行/脚本文件
+version: 1.0.0
+category: malicious_download
+scope: packet
+enabled: true
+severity: medium
+weight: 25
+confidence: 0.6
+author: baize-team
+description: >-
+  通过 HTTP 明文下载可执行文件或脚本（exe/dll/ps1/bat/scr/vbs/jar/msi 等）。
+  恶意载荷投递常见，但下载本身不构成攻击证据，需结合来源域名与后续行为。
+false_positive_hint: 软件更新、安装包下载、内部工具分发均为常见合法场景。
+conditions:
+  all:
+    - field: http.uri
+      op: regex
+      value: (?i)\.(exe|dll|ps1|bat|scr|vbs|jar|msi|cmd|com)(\?|$)
+evidence: [frame.number, frame.time, ip.src, ip.dst, http.host, http.uri, http.method]
+mitre_tags: [T1105, T1204.002]
+tags: [HTTP, DOWNLOAD, MALWARE]

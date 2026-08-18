@@ -1,0 +1,21 @@
+# 运行时数据（数据库、上传文件、报告、原始 pcap）
+data/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+tests/fixtures/*.pcap
+tests/fixtures/*.pcapng
+
+# 本地环境配置（Claude Code 会话配置、虚拟环境、环境变量）
+.claude/
+.venv/
+venv/
+.env
+
+# 操作系统/编辑器杂项
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

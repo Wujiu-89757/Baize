@@ -1,0 +1,41 @@
+id: http.webshell.antsword
+name: WebShell 通信-蚁剑 (AntSword)
+version: 1.0.0
+category: webshell
+scope: packet
+enabled: true
+severity: high
+weight: 55
+confidence: 0.85
+author: baize-team
+description: >-
+  命中蚁剑（AntSword）WebShell 通信特征：POST 到疑似脚本文件，载荷为 URL 编码的
+  PHP 代码且含蚁剑固定初始化模板（@ini_set("display_errors","0");@set_time_limit(0)）、
+  随机 16 位 hex 参数名（值为短随机字符+Base64），或携带默认 User-Agent
+  （antSword/x.x，老版本固定）。蚁剑无强加密，编码可还原。
+false_positive_hint: 自定义 UA/参数名可绕过 UA 与参数特征；正常表单若提交 16 位 hex 字段可能误报，
+  请结合 ini_set/set_time_limit 载荷模板综合判断。
+conditions:
+  all:
+    - field: protocol
+      op: eq
+      value: http
+    - field: http.method
+      op: eq
+      value: POST
+    - any:
+        - field: http.user_agent
+          op: contains
+          value: antSword
+        - field: http.body_head
+          op: regex
+          value: (?i)(ini_set.{0,80}display_errors|set_time_limit.{0,60}open_basedir|ini_set.{0,60}set_time_limit)
+        - field: http.body_head
+          op: regex
+          value: (^|&)[0-9a-f]{12,16}=[A-Za-z0-9]{1,4}(&|$)
+        - field: http.body_head
+          op: regex
+          value: (?i)base64_decode.{0,80}(eval|assert)
+evidence: [frame.number, frame.time, ip.src, ip.dst, http.host, http.uri, http.user_agent, http.body_head]
+mitre_tags: [T1505.003, T1190]
+tags: [WEBSHELL, ANTSWORD, HTTP]

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>白泽流量分析平台</title>
+<script>try{if(localStorage.getItem('te-theme')==='light')document.documentElement.classList.remove('dark')}catch(e){}</script>
+<link rel="stylesheet" href="/static/css/style.css?v=2">
+</head>
+<body>
+<div id="app-view" class="te-layout">
+  <aside class="te-sidebar" id="sidebar">
+    <div class="logo">
+      <span class="logo-mark" id="logo-mark"></span>
+      <span>白泽流量分析<small class="sub">BAIZE Traffic Analysis</small></span>
+    </div>
+    <div class="theme-row">
+      <span>界面主题</span>
+      <button id="theme-btn" title="切换暗/亮主题"></button>
+    </div>
+    <nav>
+      <a href="#/dashboard" data-nav="dashboard" class="nav-item"><span class="nav-ic" data-ic="dashboard"></span>仪表盘</a>
+      <a href="#/files" data-nav="files" class="nav-item"><span class="nav-ic" data-ic="upload"></span>文件管理</a>
+      <a href="#/strategies" data-nav="strategies" class="nav-item"><span class="nav-ic" data-ic="shield"></span>策略库</a>
+      <a href="#/tasks" data-nav="tasks" class="nav-item"><span class="nav-ic" data-ic="play"></span>分析任务</a>
+      <a href="#/trash" data-nav="trash" class="nav-item"><span class="nav-ic" data-ic="trash"></span>回收站</a>
+      <a href="#/audit" data-nav="audit" class="nav-item"><span class="nav-ic" data-ic="log"></span>审计日志</a>
+    </nav>
+    <div class="nav-footer">
+      <div id="sys-version">白泽流量分析平台 v0.1</div>
+    </div>
+  </aside>
+  <main class="te-main" id="main"></main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="/static/js/api.js?v=2"></script>
+<script src="/static/js/icons.js?v=2"></script>
+<script src="/static/js/dashboard.js?v=2"></script>
+<script src="/static/js/files.js?v=2"></script>
+<script src="/static/js/strategies.js?v=2"></script>
+<script src="/static/js/tasks.js?v=2"></script>
+<script src="/static/js/trash.js?v=2"></script>
+<script src="/static/js/audit.js?v=2"></script>
+<script src="/static/js/app.js?v=2"></script>
+<script>App.boot();</script>
+</body>
+</html>

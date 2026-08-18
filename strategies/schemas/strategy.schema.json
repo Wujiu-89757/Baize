@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://baize.local/strategies/schema/v1",
+  "title": "白泽流量分析平台策略格式",
+  "description": "策略描述'观察什么特征、满足什么条件、贡献多少风险'，为纯数据，不执行代码。启停是策略元数据（strategies.enabled），不属于版本内容；enabled 仅作模板提示，不参与执行。",
+  "type": "object",
+  "required": ["id", "name", "version", "category", "scope", "severity", "weight", "confidence", "conditions"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]{2,63}$", "description": "稳定唯一标识，如 dns.tunnel.high_entropy"},
+    "name": {"type": "string", "description": "中文名称"},
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "语义化版本"},
+    "category": {"type": "string", "description": "C2/扫描/恶意下载/凭证攻击/隧道/异常协议等"},
+    "scope": {"type": "string", "enum": ["packet", "session", "host", "file", "correlation"]},
+    "enabled": {"type": "boolean", "description": "仅模板提示用；实际启停以 strategies.enabled 元数据为准，本字段不参与执行"},
+    "severity": {"type": "string", "enum": ["info", "low", "medium", "high", "critical"]},
+    "weight": {"type": "number", "minimum": 1, "maximum": 100, "description": "风险分值"},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1, "description": "规则置信度"},
+    "description": {"type": "string"},
+    "false_positive_hint": {"type": "string"},
+    "author": {"type": "string"},
+    "window": {
+      "type": "object",
+      "properties": {
+        "seconds": {"type": "number", "exclusiveMinimum": 0, "description": "时间窗口（秒）"},
+        "multi": {"type": "array", "items": {"type": "number", "exclusiveMinimum": 0}, "description": "多窗口聚合（秒），如 [1,10,60,300]"},
+        "group_by": {"type": "array", "items": {"type": "string"}, "description": "分组键，如 [src_ip, dst_ip, dns.base_domain]"}
+      },
+      "additionalProperties": false
+    },
+    "conditions": {
+      "oneOf": [
+        {"$ref": "#/definitions/condition"},
+        {
+          "type": "object",
+          "minProperties": 1,
+          "properties": {
+            "all": {"type": "array", "items": {"$ref": "#/definitions/node"}},
+            "any": {"type": "array", "items": {"$ref": "#/definitions/node"}},
+            "not": {"$ref": "#/definitions/node"}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "evidence": {"type": "array", "items": {"type": "string"}, "description": "需要保存的字段"},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "mitre_tags": {"type": "array", "items": {"type": "string"}}
+  },
+  "definitions": {
+    "node": {
+      "oneOf": [
+        {"$ref": "#/definitions/condition"},
+        {
+          "type": "object",
+          "minProperties": 1,
+          "properties": {
+            "all": {"type": "array", "items": {"$ref": "#/definitions/node"}},
+            "any": {"type": "array", "items": {"$ref": "#/definitions/node"}},
+            "not": {"$ref": "#/definitions/node"}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "condition": {
+      "type": "object",
+      "required": ["field", "op", "value"],
+      "properties": {
+        "field": {"type": "string", "description": "统一字段名，如 tcp.dstport / session.syn_count / dns.query"},
+        "op": {
+          "type": "string",
+          "enum": ["eq", "neq", "gt", "gte", "lt", "lte", "in", "not_in", "contains", "starts_with", "regex", "cidr", "port_range", "entropy", "is_null", "not_null"]
+        },
+        "value": {"description": "标量、列表或比较器字典（如 {gte: 4.2}）"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

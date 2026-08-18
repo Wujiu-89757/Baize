@@ -1,0 +1,28 @@
+id: dns.nxdomain_burst
+name: DNS NXDOMAIN 突增（暴力猜解/DGA 倾向）
+version: 1.0.0
+category: dns
+scope: host
+enabled: true
+severity: medium
+weight: 30
+confidence: 0.65
+author: baize-team
+description: >-
+  主机在窗口内产生大量 DNS 查询且大部分返回 NXDOMAIN（不存在），
+  与域名暴力猜解、DGA 探测或失效域名解析行为相似。
+false_positive_hint: 内部 DNS 缓存失效、批量邮件退信查询、测试脚本可能误报。
+window:
+  seconds: 300
+  group_by: [ip.src]
+conditions:
+  all:
+    - field: session.dns_query_count
+      op: gte
+      value: 10
+    - field: session.dns_nxdomain_ratio
+      op: gte
+      value: 0.7
+evidence: [frame.number, frame.time, ip.src, dns.query, dns.rcode]
+mitre_tags: [T1568.002]
+tags: [DNS, DGA, BRUTEFORCE]

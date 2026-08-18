@@ -1,0 +1,45 @@
+id: http.webshell.cknife
+name: WebShell 通信-中国菜刀 (Cknife/Chopper)
+version: 1.0.0
+category: webshell
+scope: packet
+enabled: true
+severity: high
+weight: 55
+confidence: 0.9
+author: baize-team
+description: >-
+  命中中国菜刀（Cknife/Chopper）WebShell 通信特征：Java 版客户端固定 UA
+  （Java/1.8.0_xxx）+ POST 到 PHP 脚本；载荷为明文一句话
+  a=@eval(base64_decode($_POST[action]))；响应体以 "->|" 分隔符开头。
+  菜刀流量无加密，特征可明文直接匹配。
+false_positive_hint: Java/1.8.0_* UA 可能被其他 Java HTTP 客户端使用，需结合 eval 载荷与 .php 目标；
+  "->|" 分隔符也可能被其他脚本输出。
+conditions:
+  all:
+    - field: protocol
+      op: eq
+      value: http
+    - field: http.method
+      op: eq
+      value: POST
+    - any:
+        - all:
+            - field: http.user_agent
+              op: starts_with
+              value: Java/1.8.0
+            - field: http.uri
+              op: regex
+              value: (?i)\.php($|\?)
+        - field: http.body_head
+          op: regex
+          value: (?i)a=@eval.{0,6}base64_decode\(_\$POST
+        - field: tcp.payload_head
+          op: regex
+          value: (?i)a=@eval.{0,6}base64_decode\(_\$POST
+        - field: http.body_head
+          op: contains
+          value: ->|
+evidence: [frame.number, frame.time, ip.src, ip.dst, http.host, http.uri, http.user_agent, http.body_head]
+mitre_tags: [T1505.003, T1190]
+tags: [WEBSHELL, CKNIFE, CHOPPER, HTTP]

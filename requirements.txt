@@ -1,0 +1,9 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+sqlalchemy>=2.0
+pydantic>=2.6
+python-multipart>=0.0.9
+PyYAML>=6.0
+scapy>=2.5
+regex>=2024.5.15
+jsonschema>=4.0

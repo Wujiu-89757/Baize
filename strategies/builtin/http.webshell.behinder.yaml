@@ -1,0 +1,44 @@
+id: http.webshell.behinder
+name: WebShell 通信-冰蝎 (Behinder)
+version: 1.0.0
+category: webshell
+scope: packet
+enabled: true
+severity: high
+weight: 60
+confidence: 0.8
+author: baize-team
+description: >-
+  命中冰蝎（Behinder）WebShell 通信特征：POST 载荷为整段 Base64 密文（无参数名、
+  无键值分隔），或载荷/响应命中冰蝎默认密钥产生的固定密文前缀
+  （请求 m7nCS8n4OZG9akdDlxm6O / 3Mn1yNMtoZViV5wotQHPJ，响应
+  mAUYLzmqn5QPDkyI5lvSp；XOR 变体响应前缀 TxcWR1NNExZAD0ZaAWMIPAZjH1BFBFtHThcJSlUXWEd）。
+  改密后前缀特征失效，但"整段密文、无参数名"结构特征仍保留。
+false_positive_hint: 上传 Base64 编码文件内容的 POST 可能命中纯 Base64 结构特征；
+  哥斯拉等同类加密 WebShell 的密文段也可能命中该结构分支（会同时命中其专属策略）；
+  密文前缀命中为默认密钥直接证据，可信度最高。
+  二进制密文变体（JSP XOR raw 等）无字段可匹配，无法识别。
+conditions:
+  all:
+    - any:
+        - field: http.body_head
+          op: starts_with
+          value: [m7nCS8n4OZG9akdDlxm6O, 3Mn1yNMtoZViV5wotQHPJ, Mi98Z4C6tlO8H5F7+5pymT, dFAXQV1LORcHRQtLRlwMAhwF, UUcXXEBmFAASWhZNW1sF]
+        - field: tcp.payload_head
+          op: starts_with
+          value: [m7nCS8n4OZG9akdDlxm6O, 3Mn1yNMtoZViV5wotQHPJ, Mi98Z4C6tlO8H5F7+5pymT, dFAXQV1LORcHRQtLRlwMAhwF, UUcXXEBmFAASWhZNW1sF]
+        - field: http.body_head
+          op: regex
+          value: ^[A-Za-z0-9+/]{50}
+        - field: tcp.payload_head
+          op: regex
+          value: ^(?![0-9a-f]{16}L)[A-Za-z0-9+/]{50}
+        - field: http.body_head
+          op: contains
+          value: [mAUYLzmqn5QPDkyI5lvSp, TxcWR1NNExZAD0ZaAWMIPAZjH1BFBFtHThcJSlUXWEd]
+        - field: tcp.payload_head
+          op: contains
+          value: [mAUYLzmqn5QPDkyI5lvSp, TxcWR1NNExZAD0ZaAWMIPAZjH1BFBFtHThcJSlUXWEd]
+evidence: [frame.number, frame.time, ip.src, ip.dst, http.host, http.uri, http.body_head, tcp.payload_head]
+mitre_tags: [T1505.003, T1190]
+tags: [WEBSHELL, BEHINDER, ENCRYPTED, HTTP]

@@ -1,0 +1,42 @@
+id: scan.tcp_syn_scan
+name: 疑似 TCP SYN 端口扫描（Nmap -sS 行为）
+version: 1.0.0
+category: scanning
+scope: session
+enabled: true
+severity: high
+weight: 70
+confidence: 0.85
+author: baize-team
+description: >-
+  单一源 IP 在时间窗口内向目标发起大量纯 SYN 探测，覆盖大量不同端口，
+  纯 SYN 比例高、握手完成率极低、载荷几乎为零。该组合与 Nmap -sS
+  半开放扫描的行为高度一致，结果应表述为"疑似"，而非直接断言工具名称。
+false_positive_hint: >-
+  负载均衡健康检查、资产发现、漏洞扫描器、服务监控、代理/NAT 重试、
+  短时间内的大量客户端连接均可能相似。请结合资产角色、是否授权扫描源、
+  端口顺序、响应比例、重复周期与白名单进行降权或豁免。
+window:
+  seconds: 60
+  multi: [1, 10, 60, 300]
+  group_by: [src_ip, dst_ip]
+conditions:
+  all:
+    - field: session.syn_count
+      op: gte
+      value: 100
+    - field: session.distinct_dst_ports
+      op: gte
+      value: 50
+    - field: session.syn_pure_ratio
+      op: gte
+      value: 0.9
+    - field: session.handshake_completion_ratio
+      op: lte
+      value: 0.2
+    - field: session.payload_ratio
+      op: lte
+      value: 0.05
+evidence: [frame.number, frame.time, ip.src, ip.dst, tcp.srcport, tcp.dstport, tcp.flags, tcp.len]
+mitre_tags: [T1046]
+tags: [SCAN, SYN, Nmap]

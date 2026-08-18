@@ -1,0 +1,31 @@
+id: dns.tunnel.high_entropy
+name: DNS 高熵长子域名疑似隧道
+version: 1.0.0
+category: tunneling
+scope: session
+enabled: true
+severity: medium
+weight: 35
+confidence: 0.72
+author: baize-team
+description: >-
+  同一源 IP 对同一基础域名发起大量 DNS 查询，查询名长度大且香农熵高，
+  与 DNS 隧道（数据外带/C2）的编码特征相似。仅凭熵与长度不能确认隧道。
+false_positive_hint: 动态 DNS、CDN 节点名、合法长随机子域名（云服务）可能误报。
+window:
+  seconds: 300
+  group_by: [src_ip, dns.base_domain]
+conditions:
+  all:
+    - field: session.dns_query_count
+      op: gte
+      value: 20
+    - field: session.dns_entropy_max
+      op: gte
+      value: 4.2
+    - field: session.dns_longest_query
+      op: gte
+      value: 45
+evidence: [frame.number, frame.time, ip.src, ip.dst, dns.query, dns.qtype]
+mitre_tags: [T1071.004]
+tags: [DNS, C2, TUNNEL]

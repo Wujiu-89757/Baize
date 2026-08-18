@@ -1,0 +1,32 @@
+id: outbound.beacon_periodicity
+name: 周期性外连（Beacon 倾向）
+version: 1.0.0
+category: outbound
+scope: session
+enabled: true
+severity: medium
+weight: 40
+confidence: 0.7
+author: baize-team
+description: >-
+  主机对同一目标端口以近似固定间隔发起多次连接（到达间隔标准差/均值
+  很小），是 C2 Beacon 回连的典型特征之一。周期特征需结合外连目的
+  与流量内容综合判断。
+false_positive_hint: 心跳/保活连接、轮询 API、NTP 客户端、同步任务均可能周期连接。
+window:
+  seconds: 300
+  group_by: [src_ip, dst_ip, tcp.dstport]
+conditions:
+  all:
+    - field: session.packet_count
+      op: gte
+      value: 5
+    - field: session.periodicity_score
+      op: gte
+      value: 0.8
+    - field: session.interval_mean_ms
+      op: gte
+      value: 1000
+evidence: [frame.number, frame.time, ip.src, ip.dst, tcp.dstport, tcp.len]
+mitre_tags: [T1071.001]
+tags: [C2, BEACON, PERIODIC]

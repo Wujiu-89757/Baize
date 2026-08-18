@@ -1,0 +1,31 @@
+id: auth.ssh_bruteforce
+name: SSH 暴力破解倾向
+version: 1.0.0
+category: credential
+scope: session
+enabled: true
+severity: medium
+weight: 40
+confidence: 0.65
+author: baize-team
+description: >-
+  源主机在窗口内对目标 22 端口发起大量短连接尝试，每次连接载荷极少，
+  与 SSH 口令暴力破解的批量尝试行为相似。
+false_positive_hint: 配置管理工具（Ansible/Salt）批量分发、监控轮询可能误报。
+window:
+  seconds: 300
+  group_by: [src_ip, dst_ip]
+conditions:
+  all:
+    - field: session.count
+      op: gte
+      value: 20
+    - field: tcp.dstport
+      op: eq
+      value: 22
+    - field: session.payload_ratio
+      op: lte
+      value: 0.3
+evidence: [frame.number, frame.time, ip.src, ip.dst, tcp.srcport, tcp.dstport, tcp.flags]
+mitre_tags: [T1110.001]
+tags: [SSH, BRUTEFORCE, AUTH]

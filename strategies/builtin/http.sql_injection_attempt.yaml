@@ -1,0 +1,29 @@
+id: http.sql_injection_attempt
+name: HTTP SQL 注入请求特征
+version: 1.0.0
+category: sql_injection
+scope: packet
+enabled: true
+severity: medium
+weight: 35
+confidence: 0.8
+author: baize-team
+description: >-
+  HTTP 请求 URI 命中 SQL 注入特征：逐字符爆破函数（ascii(substr(...))）、
+  系统库查询（information_schema）、时间盲注（sleep/benchmark）、报错注入
+  （updatexml/extractvalue）、文件读写（load_file/into outfile）、union 联合查询、
+  注释符（--+）与 ' and/or 恒真式。单条命中提示注入尝试，结合高频同目标请求可确认盲注。
+false_positive_hint: 安全测试、WAF 旁路验证、包含 SQL 关键词的文档 URL 可能误报；
+  请结合请求频率与响应差异综合判断。
+conditions:
+  all:
+    - field: protocol
+      op: eq
+      value: http
+    - any:
+        - field: http.uri
+          op: regex
+          value: (?i)(ascii%28substr|substr%28.{0,60}from|information_schema|union.{0,4}(all%20|all\s+)?select|sleep%28|benchmark%28|updatexml%28|extractvalue%28|load_file%28|into%20outfile|--\+?$|'%20(and|or)%20)
+evidence: [frame.number, frame.time, ip.src, ip.dst, http.host, http.uri]
+mitre_tags: [T1190, T1059.007]
+tags: [SQLI, INJECTION, HTTP]

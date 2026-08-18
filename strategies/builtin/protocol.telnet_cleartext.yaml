@@ -1,0 +1,23 @@
+id: protocol.telnet_cleartext
+name: Telnet 明文协议使用
+version: 1.0.0
+category: exposure
+scope: packet
+enabled: true
+severity: low
+weight: 10
+confidence: 0.7
+author: baize-team
+description: >-
+  检测到 Telnet 明文协议（23/2323 端口）通信。Telnet 不加密，用户名口令与
+  全部会话内容明文可见，存在被窃听与口令泄露风险；会话中出现的可读命令/凭据
+  字符串即为泄露证据（如键盘输入逐字符还原）。应使用 SSH 替代。
+false_positive_hint: 遗留设备管理、CTF 靶场环境仍在使用 Telnet；本规则仅提示风险。
+conditions:
+  all:
+    - field: tcp.dstport
+      op: in
+      value: [23, 2323]
+evidence: [frame.number, frame.time, ip.src, ip.dst, tcp.dstport]
+mitre_tags: [T1041, T1071.001]
+tags: [TELNET, CLEARTEXT, EXPOSURE]

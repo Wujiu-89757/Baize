@@ -1,0 +1,26 @@
+id: tls.suspicious_metadata
+name: TLS ClientHello 缺失 SNI（可疑元数据）
+version: 1.0.0
+category: tls
+scope: packet
+enabled: true
+severity: low
+weight: 15
+confidence: 0.5
+author: baize-team
+description: >-
+  TLS 握手 ClientHello 未携带 SNI 扩展。多数正规客户端会携带 SNI，
+  缺失常见于定制 C2、隧道工具与部分老旧客户端。仅元数据提示，
+  不解密内容（文档 2.3）。
+false_positive_hint: 老旧软件、IP 直连应用、部分 IoT 设备可能不发送 SNI。
+conditions:
+  all:
+    - field: tls.handshake_type
+      op: eq
+      value: client_hello
+    - field: tls.sni
+      op: is_null
+      value: true
+evidence: [frame.number, frame.time, ip.src, ip.dst, tcp.srcport, tcp.dstport, tls.version]
+mitre_tags: [T1573.002]
+tags: [TLS, C2, METADATA]

@@ -1,0 +1,50 @@
+id: http.webshell.godzilla
+name: WebShell 通信-哥斯拉 (Godzilla)
+version: 1.0.0
+category: webshell
+scope: packet
+enabled: true
+severity: high
+weight: 55
+confidence: 0.8
+author: baize-team
+description: >-
+  命中哥斯拉（Godzilla）WebShell 通信特征：POST 载荷为单参数密文
+  （cmd= 或 pass= + Base64/URL 编码密文），eval 型载荷可见
+  pass=eval(base64_decode(strrev(urldecode(...)))) 固定包裹链，响应体以
+  16 位十六进制 + "L" + 密文开头，或命中哥斯拉默认密钥产生的固定密文前缀
+  （cmd=FEBSFlAJA0ZXFxEJBUFKWEk / 心跳 cmd=XVVHDF4AKFNfAG /
+  eval 型 pass=K0QfK0Qf）。改密后前缀特征失效，单参数密文结构与响应格式仍保留。
+false_positive_hint: 正常业务若使用 cmd/pass 参数并提交长 Base64 值可能误报；
+  密文前缀命中为默认密钥直接证据，可信度最高。
+  二进制密文变体（xor raw）无字段可匹配，无法识别。
+conditions:
+  all:
+    - any:
+        - field: http.body_head
+          op: starts_with
+          value: [cmd=FEBSFlAJA0ZXFxEJBUFKWEk, cmd=XVVHDF4AKFNfAG, pass=K0QfK0Qf]
+        - field: tcp.payload_head
+          op: starts_with
+          value: [cmd=FEBSFlAJA0ZXFxEJBUFKWEk, cmd=XVVHDF4AKFNfAG, pass=K0QfK0Qf]
+        - field: http.body_head
+          op: regex
+          value: ^(cmd|pass)=[A-Za-z0-9+/%]{20}
+        - field: tcp.payload_head
+          op: regex
+          value: ^(cmd|pass)=[A-Za-z0-9+/%]{20}
+        - field: http.body_head
+          op: regex
+          value: (?i)(pass=eval|eval.{0,10}base64_decode.{0,10}strrev|base64_decode.{0,10}strrev.{0,10}urldecode)
+        - field: tcp.payload_head
+          op: regex
+          value: (?i)(pass=eval|eval.{0,10}base64_decode.{0,10}strrev|base64_decode.{0,10}strrev.{0,10}urldecode)
+        - field: http.body_head
+          op: regex
+          value: "[0-9a-f]{16}L[A-Za-z0-9+/]{10}"
+        - field: tcp.payload_head
+          op: regex
+          value: "[0-9a-f]{16}L[A-Za-z0-9+/]{10}"
+evidence: [frame.number, frame.time, ip.src, ip.dst, http.host, http.uri, http.body_head, tcp.payload_head]
+mitre_tags: [T1505.003, T1190]
+tags: [WEBSHELL, GODZILLA, ENCRYPTED, HTTP]
